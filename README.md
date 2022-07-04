@@ -1,3 +1,7 @@
+// TO DO:
+- test for jobs routes
+- job applications
+
 # Jobly Backend
 
 This is the Express backend for Jobly, version 2.

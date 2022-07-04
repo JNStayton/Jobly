@@ -12,7 +12,8 @@ const {
 	commonAfterEach,
 	commonAfterAll,
 	u1Token,
-	adminToken
+	adminToken,
+	testJobIds
 } = require('./_testCommon');
 
 beforeAll(commonBeforeAll);
@@ -189,7 +190,8 @@ describe('GET /users/:username', function() {
 				firstName: 'U1F',
 				lastName: 'U1L',
 				email: 'user1@user.com',
-				isAdmin: false
+				isAdmin: false,
+				applications: []
 			}
 		});
 	});
@@ -202,7 +204,8 @@ describe('GET /users/:username', function() {
 				firstName: 'U1F',
 				lastName: 'U1L',
 				email: 'user1@user.com',
-				isAdmin: false
+				isAdmin: false,
+				applications: []
 			}
 		});
 	});
@@ -325,6 +328,36 @@ describe('DELETE /users/:username', function() {
 
 	test('not found if user missing', async function() {
 		const resp = await request(app).delete(`/users/nope`).set('authorization', `Bearer ${adminToken}`);
+		expect(resp.statusCode).toEqual(404);
+	});
+});
+
+/************************************** POST /users/:username/jobs/:id */
+describe('POST /users/:username/jobs/:id', () => {
+	test('works for admin', async () => {
+		const resp = await request(app)
+			.post(`/users/u1/jobs/${testJobIds[0]}`)
+			.set('authorization', `Bearer ${adminToken}`);
+		expect(resp.body).toEqual({ applied: testJobIds[0] });
+	});
+	test('works for logged in current user', async () => {
+		const resp = await request(app)
+			.post(`/users/u1/jobs/${testJobIds[0]}`)
+			.set('authorization', `Bearer ${u1Token}`);
+		expect(resp.body).toEqual({ applied: testJobIds[0] });
+	});
+	test('does not work for anon', async () => {
+		const resp = await request(app).post(`/users/u1/jobs/${testJobIds[0]}`);
+		expect(resp.statusCode).toEqual(401);
+	});
+	test('not found for no such username', async () => {
+		const resp = await request(app)
+			.post(`/users/u99/jobs/${testJobIds[0]}`)
+			.set('authorization', `Bearer ${adminToken}`);
+		expect(resp.statusCode).toEqual(404);
+	});
+	test('bad request for invalid data', async () => {
+		const resp = await request(app).post(`/users/u1/jobs/123456789`).set('authorization', `Bearer ${adminToken}`);
 		expect(resp.statusCode).toEqual(404);
 	});
 });

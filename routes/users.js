@@ -113,4 +113,18 @@ router.delete('/:username', ensureLoggedIn, ensureCorrectUserAuthorization, asyn
 	}
 });
 
+/**
+ * POST /user/:username/jobs/:id
+ * Authorization required: login
+ */
+
+router.post('/:username/jobs/:id', ensureLoggedIn, async (req, res, next) => {
+	try {
+		await User.applyToJob(req.params.username, +req.params.id);
+		return res.json({ applied: +req.params.id });
+	} catch (err) {
+		return next(err);
+	}
+});
+
 module.exports = router;
